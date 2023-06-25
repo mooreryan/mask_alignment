@@ -1,0 +1,12 @@
+>s1
+-ABCDEF
+>s2
+--BCDEF
+>s3
+-.-CDEF
+>s4
+---.DEF
+>s5
+-.---EF
+>s6
+---.-.F

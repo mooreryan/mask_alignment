@@ -1,0 +1,6 @@
+(executable
+ (name mask_alignment)
+ (public_name mask_alignment)
+ (libraries base bio_io stdio)
+ (preprocess
+  (pps ppx_string)))
