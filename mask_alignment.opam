@@ -15,6 +15,7 @@ depends: [
   "base" {>= "v0.15.0" & < "v0.16.0"}
   "stdio" {>= "v0.15.0" & < "v0.16.0"}
   "ppx_string" {>= "v0.15.0" & < "v0.16.0"}
+  "ppx_fields_conv" {>= "v0.15.0" & < "v0.16.0"}
   "odoc" {with-doc}
 ]
 build: [
