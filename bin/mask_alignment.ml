@@ -85,7 +85,11 @@ let get_good_columns (Alignment.{num_cols; records} as alignment) max_gap_ratio
         for seq_i = 0 to num_seqs - 1 do
           let record = records.(seq_i) in
           let seq = Bio_io.Fasta.Record.seq record in
-          let char = String.get seq column_i in
+          (* [unsafe_get] is okay here because the [num_cols] will be correct by
+             construction of [Alignment.t], and so it should never be
+             out-of-bounds. In long alignments, this can speed up program
+             runtime by up to 25%. *)
+          let char = String.unsafe_get seq column_i in
           if is_gap char then num_gaps := !num_gaps + 1
         done
       in
