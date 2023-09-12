@@ -70,14 +70,8 @@ let parse_mask_ratio s =
 
 let gap_ratio num_gaps num_seqs = Int.to_float num_gaps /. Int.to_float num_seqs
 
-let a = Char.to_int 'a'
-let z = Char.to_int 'z'
-let a_cap = Char.to_int 'A'
-let z_cap = Char.to_int 'Z'
-
-let is_gap c =
-  let c' = Char.to_int c in
-  not ((a <= c' && c' <= z) || (a_cap <= c' && c' <= z_cap))
+(** A gap is any non [a-zA-Z] character. *)
+let is_gap = function 'a' .. 'z' | 'A' .. 'Z' -> false | _ -> true
 
 let get_good_columns (Alignment.{num_cols; records} as alignment) max_gap_ratio
     =
