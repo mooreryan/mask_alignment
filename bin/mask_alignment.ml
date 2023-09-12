@@ -22,6 +22,8 @@ module Alignment : sig
 
       Raises an exception unless all the records have the same length (number
       alignment columns). *)
+
+  val get_good_columns : t -> float -> int array
 end = struct
   type t = {num_cols: int; records: Bio_io.Fasta.Record.t array}
 
@@ -43,6 +45,44 @@ end = struct
           (expected_num_cols, record :: records) )
     in
     {num_cols; records= Array.of_list_rev records}
+
+  let gap_ratio ~num_gaps ~num_seqs =
+    Int.to_float num_gaps /. Int.to_float num_seqs
+
+  (** A gap is any non [a-zA-Z] character. *)
+  let is_gap = function 'a' .. 'z' | 'A' .. 'Z' -> false | _ -> true
+
+  (* Tracks the number of gaps in each column. *)
+  let get_num_gaps_per_column {num_cols; records} =
+    let num_gaps_per_col = Array.create ~len:num_cols 0 in
+    Array.iter records ~f:(fun record ->
+        Bio_io.Fasta.Record.seq record
+        |> String.iteri ~f:(fun col_i char ->
+               if is_gap char then
+                 let current_gap_count =
+                   Array.unsafe_get num_gaps_per_col col_i
+                 in
+                 Array.unsafe_set num_gaps_per_col col_i (current_gap_count + 1) ) ) ;
+    num_gaps_per_col
+
+  (* Builds an array where each element is the index of a column that has
+     smaller gap ration than the limit. These are the columns you will need to
+     keep from the alignment. *)
+  let pick_good_columns num_gaps_per_col num_seqs max_gap_ratio =
+    let keep_these_columns =
+      Array.foldi num_gaps_per_col ~init:[]
+        ~f:(fun col_i keep_these_columns num_gaps ->
+          let gap_ratio = gap_ratio ~num_gaps ~num_seqs in
+          if Float.(gap_ratio < max_gap_ratio) then col_i :: keep_these_columns
+          else keep_these_columns )
+    in
+    Array.of_list_rev keep_these_columns
+
+  (* Call this from outside of this module. *)
+  let get_good_columns ({num_cols; records} as alignment) max_gap_ratio =
+    let num_seqs = num_seqs alignment in
+    let num_gaps_per_col = get_num_gaps_per_column alignment in
+    pick_good_columns num_gaps_per_col num_seqs max_gap_ratio
 end
 
 let version = "1.0.0"
@@ -68,37 +108,6 @@ let parse_mask_ratio s =
         abort [%string "ERROR -- max_gap_percent must be in the range (0, 100]"]
       else x /. 100.
 
-let gap_ratio num_gaps num_seqs = Int.to_float num_gaps /. Int.to_float num_seqs
-
-(** A gap is any non [a-zA-Z] character. *)
-let is_gap = function 'a' .. 'z' | 'A' .. 'Z' -> false | _ -> true
-
-let get_good_columns (Alignment.{num_cols; records} as alignment) max_gap_ratio
-    =
-  let keep_these = ref [] in
-  let num_seqs = Alignment.num_seqs alignment in
-  let () =
-    for column_i = 0 to num_cols - 1 do
-      (* Number of gaps in this column. *)
-      let num_gaps = ref 0 in
-      let () =
-        for seq_i = 0 to num_seqs - 1 do
-          let record = records.(seq_i) in
-          let seq = Bio_io.Fasta.Record.seq record in
-          (* [unsafe_get] is okay here because the [num_cols] will be correct by
-             construction of [Alignment.t], and so it should never be
-             out-of-bounds. In long alignments, this can speed up program
-             runtime by up to 25%. *)
-          let char = String.unsafe_get seq column_i in
-          if is_gap char then num_gaps := !num_gaps + 1
-        done
-      in
-      if Float.(gap_ratio !num_gaps num_seqs < max_gap_ratio) then
-        keep_these := column_i :: !keep_these
-    done
-  in
-  Array.of_list_rev !keep_these
-
 (* Parse input args. *)
 let fname, max_gap_ratio =
   match Sys.get_argv () with
@@ -108,7 +117,7 @@ let fname, max_gap_ratio =
       abort help_msg
 
 let alignment = Alignment.read_alignment_file fname
-let good_columns = get_good_columns alignment max_gap_ratio
+let good_columns = Alignment.get_good_columns alignment max_gap_ratio
 let masked_seq_length = Array.length good_columns
 
 let print_masked_alignment () =

@@ -1,8 +1,8 @@
-(executables
+(executable
  ; (instrumentation
  ;  (backend landmarks --auto))
- (names mask_alignment)
- (public_names mask_alignment)
+ (name mask_alignment)
+ (public_name mask_alignment)
  (libraries base bio_io stdio)
  (preprocess
   (pps ppx_string ppx_fields_conv)))
