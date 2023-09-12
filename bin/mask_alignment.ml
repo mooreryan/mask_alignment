@@ -85,7 +85,7 @@ end = struct
     pick_good_columns num_gaps_per_col num_seqs max_gap_ratio
 end
 
-let version = "1.0.0"
+let version = "1.0.1"
 
 let usage_msg =
   {eof|usage: mask_alignment <aln.fa> <max_gap_percent> > <output.fa>

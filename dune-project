@@ -16,7 +16,7 @@
 
 (bug_reports "https://github.com/mooreryan/mask_alignment/issues")
 
-(version 1.0.0)
+(version 1.0.1)
 
 (license "MIT")
 
@@ -26,25 +26,19 @@
  (depends
   (ocaml
    (and
-    (>= "4.14.0")
-    (< "4.15.0")))
+    (>= "4.14.0")))
   (bio_io
    (and
-    (>= "0.6.0")
-    (< "0.7.0")))
+    (>= "0.6.0")))
   (base
    (and
-    (>= "v0.15.0")
-    (< "v0.16.0")))
+    (>= "v0.15.0")))
   (stdio
    (and
-    (>= "v0.15.0")
-    (< "v0.16.0")))
+    (>= "v0.15.0")))
   (ppx_string
    (and
-    (>= "v0.15.0")
-    (< "v0.16.0")))
+    (>= "v0.15.0")))
   (ppx_fields_conv
    (and
-    (>= "v0.15.0")
-    (< "v0.16.0")))))
+    (>= "v0.15.0")))))
