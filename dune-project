@@ -1,4 +1,4 @@
-(lang dune 3.8)
+(lang dune 3.20)
 
 (cram enable)
 
@@ -16,7 +16,7 @@
 
 (bug_reports "https://github.com/mooreryan/mask_alignment/issues")
 
-(version 1.0.1)
+(version 1.0.2)
 
 (license "MIT")
 
@@ -32,13 +32,7 @@
     (>= "0.6.0")))
   (base
    (and
-    (>= "v0.15.0")))
+    (>= "v0.16.0")))
   (stdio
    (and
-    (>= "v0.15.0")))
-  (ppx_string
-   (and
-    (>= "v0.15.0")))
-  (ppx_fields_conv
-   (and
-    (>= "v0.15.0")))))
+    (>= "v0.16.0")))))

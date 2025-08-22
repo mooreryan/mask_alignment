@@ -3,6 +3,4 @@
  ;  (backend landmarks --auto))
  (name mask_alignment)
  (public_name mask_alignment)
- (libraries base bio_io stdio)
- (preprocess
-  (pps ppx_string ppx_fields_conv)))
+ (libraries base bio_io stdio))

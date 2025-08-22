@@ -6,7 +6,7 @@ Decently fast, so you can use it with big alignment files.
 
 ## Install
 
-If you are an OCaml developer, clone the repo, then run `opam install . --locked`. (Feel free to leave off the lockfile if you don't need it.)
+If you are an OCaml developer, clone the repo, then run `opam install .`.
 
 If you are not, instructions to set up an OCaml development environment can be found [here](https://ocaml.org/learn/tutorials/up_and_running.html) or [here](https://dev.realworldocaml.org/install.html).
 

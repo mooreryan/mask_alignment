@@ -1,16 +1,12 @@
 open! Base
 
-let abort ?(exit_code = 1) msg =
-  let () = Stdio.eprintf "%s\n" msg in
-  Caml.exit exit_code
+let abort ?(exit_code = 1) =
+  Printf.ksprintf (fun msg -> Stdio.prerr_endline msg ; Stdlib.exit exit_code)
 
 module Alignment : sig
   (** - [num_cols] is the number of columns in the alignment (aka alignment
         length) *)
   type t = private {num_cols: int; records: Bio_io.Fasta.Record.t array}
-
-  val num_seqs : t -> int
-  (** [num_seqs t] returns the number of sequences in the alignment. *)
 
   val read_alignment_file : string -> t
   (** [read_alignment_file file_name] reads the alignment specified by
@@ -35,13 +31,13 @@ end = struct
       In_channel.with_file_foldi_records fname ~init:(0, [])
         ~f:(fun i (num_cols, records) record ->
           let open Record in
-          let seq_len = String.length @@ seq @@ record in
+          let seq_len = String.length (seq record) in
           let expected_num_cols = if Int.(i = 0) then seq_len else num_cols in
-          if seq_len <> expected_num_cols then
-            abort
-              [%string
-                "ERROR -- %{id record} should be %{expected_num_cols#Int} \
-                 bases but was %{seq_len#Int} bases!"] ;
+          let () =
+            if seq_len <> expected_num_cols then
+              abort "ERROR -- %s should be %d bases but was %d bases!"
+                (id record) expected_num_cols seq_len
+          in
           (expected_num_cols, record :: records) )
     in
     {num_cols; records= Array.of_list_rev records}
@@ -79,13 +75,13 @@ end = struct
     Array.of_list_rev keep_these_columns
 
   (* Call this from outside of this module. *)
-  let get_good_columns ({num_cols; records} as alignment) max_gap_ratio =
+  let get_good_columns alignment max_gap_ratio =
     let num_seqs = num_seqs alignment in
     let num_gaps_per_col = get_num_gaps_per_column alignment in
     pick_good_columns num_gaps_per_col num_seqs max_gap_ratio
 end
 
-let version = "1.0.1"
+let version = "1.0.2"
 
 let usage_msg =
   {eof|usage: mask_alignment <aln.fa> <max_gap_percent> > <output.fa>
@@ -93,19 +89,18 @@ let usage_msg =
 example: mask_alignment silly.aln.fa 95 > silly.aln.masked.fa
          ^^^ That would make fasta file that has any column with >= 95% gaps removed.
 
-Note: To get rid of columns with all gaps, pass in 100.  
+Note: To get rid of columns with all gaps, pass in 100.
 |eof}
-
-let help_msg = [%string "mask_alignment version %{version}\n\n%{usage_msg}"]
 
 let parse_mask_ratio s =
   match Float.of_string s with
   | exception exn ->
-      let msg = Exn.to_string exn in
-      abort [%string "ERROR -- mask_ratio can't be coerced to Float: %{msg}"]
+      abort "ERROR -- mask_ratio can't be coerced to Float: %s"
+        (Exn.to_string exn)
   | x ->
       if Float.(x <= 0. || x > 100.) then
-        abort [%string "ERROR -- max_gap_percent must be in the range (0, 100]"]
+        abort "ERROR -- max_gap_percent must be in the range (0, 100], got %.1f"
+          x
       else x /. 100.
 
 (* Parse input args. *)
@@ -114,7 +109,7 @@ let fname, max_gap_ratio =
   | [|_; fname; max_gap_ratio|] ->
       (fname, parse_mask_ratio max_gap_ratio)
   | _ ->
-      abort help_msg
+      abort "mask_alignment version %s\n\n%s" version usage_msg
 
 let alignment = Alignment.read_alignment_file fname
 let good_columns = Alignment.get_good_columns alignment max_gap_ratio
@@ -128,13 +123,13 @@ let print_masked_alignment () =
          (* Reusing this buffer saves a bit of time, but not worth it. Simpler
             to just keep it right here. *)
          let buf = Bytes.create masked_seq_length in
-         (* The loop is a smidge faster, but less nice... *)
+         (* Keep the loop, it's faster. *)
          for i = 0 to masked_seq_length - 1 do
            let char = String.get seq good_columns.(i) in
            Bytes.set buf i char
          done ;
          let new_seq = Bytes.to_string buf in
          let new_record = Record.with_seq new_seq record in
-         Stdio.print_endline @@ Record.to_string new_record )
+         Stdio.print_endline (Record.to_string new_record) )
 
 let () = print_masked_alignment ()

@@ -10,7 +10,7 @@ No args.
   example: mask_alignment silly.aln.fa 95 > silly.aln.masked.fa
            ^^^ That would make fasta file that has any column with >= 95% gaps removed.
   
-  Note: To get rid of columns with all gaps, pass in 100.  
+  Note: To get rid of columns with all gaps, pass in 100.
   
 
 
@@ -26,7 +26,7 @@ Missing percent
   example: mask_alignment silly.aln.fa 95 > silly.aln.masked.fa
            ^^^ That would make fasta file that has any column with >= 95% gaps removed.
   
-  Note: To get rid of columns with all gaps, pass in 100.  
+  Note: To get rid of columns with all gaps, pass in 100.
   
 
 Bad percent.
@@ -38,13 +38,13 @@ Bad percent.
 Percent too low.
 
   $ mask_alignment seqs.fa -1
-  ERROR -- max_gap_percent must be in the range (0, 100]
+  ERROR -- max_gap_percent must be in the range (0, 100], got -1.0
   [1]
 
 Percent too high.
 
   $ mask_alignment seqs.fa 101
-  ERROR -- max_gap_percent must be in the range (0, 100]
+  ERROR -- max_gap_percent must be in the range (0, 100], got 101.0
   [1]
 
 First column has 100% gaps.  The max_gap_percent says only columns
@@ -226,7 +226,7 @@ E column has 1/6 = 0.1666 gap ratio.
 F column has 0/6 = 0.0 gap ratio.
 
   $ mask_alignment seqs.fa 0 # Zero is an error
-  ERROR -- max_gap_percent must be in the range (0, 100]
+  ERROR -- max_gap_percent must be in the range (0, 100], got 0.0
   [1]
   $ mask_alignment seqs.fa 1 # keeps the column
   >s1
